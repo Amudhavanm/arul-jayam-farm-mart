@@ -1,73 +1,142 @@
-# Welcome to your Lovable project
 
-## Project info
+# ARUL JAYAM MACHINERY
 
-**URL**: https://lovable.dev/projects/f0018e0e-f07f-4e0e-8cd4-513691e077d0
+An agriculture-based e-commerce web application for selling farm machinery and equipment.
 
-## How can I edit this code?
+## Project Structure
 
-There are several ways of editing your application.
+The project is divided into two main parts:
 
-**Use Lovable**
+- **Frontend**: React application using TypeScript, React Router, and Tailwind CSS
+- **Backend**: Node.js Express server with MongoDB database
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/f0018e0e-f07f-4e0e-8cd4-513691e077d0) and start prompting.
+## Features
 
-Changes made via Lovable will be committed automatically to this repo.
+### User Side
+- User authentication (signup, login)
+- Product browsing with search and filter options
+- Product details view
+- Cart management
+- Checkout process
+- Order history
+- User profile management
 
-**Use your preferred IDE**
+### Admin Side
+- Admin dashboard
+- Product management (add, update)
+- Order management
+- Inventory management
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## Technologies Used
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### Frontend
+- React
+- TypeScript
+- React Router for navigation
+- Tailwind CSS for styling
+- shadcn/ui for UI components
+- Context API for state management
+- React Query for API data fetching
 
-Follow these steps:
+### Backend
+- Node.js
+- Express.js
+- MongoDB
+- Mongoose for database modeling
+- JWT for authentication
+- bcrypt.js for password hashing
+
+## Getting Started
+
+### Prerequisites
+- Node.js and npm installed
+- MongoDB instance (using MongoDB Atlas)
+
+### Running the Frontend
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+# Navigate to the frontend directory
+cd arul-jayam-machinery
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+# Install dependencies
+npm install
 
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Start the development server
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+### Running the Backend
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+```sh
+# Navigate to the backend directory
+cd backend
 
-**Use GitHub Codespaces**
+# Install dependencies
+npm install
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+# Start the development server
+npm run dev
+```
 
-## What technologies are used for this project?
+## API Endpoints
 
-This project is built with:
+### Products
+- `GET /api/products` - Get all products
+- `GET /api/products/:id` - Get single product
+- `POST /api/products` - Create a product (admin only)
+- `PUT /api/products/:id` - Update a product (admin only)
+- `DELETE /api/products/:id` - Delete a product (admin only)
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+### Users
+- `POST /api/users/register` - Register a new user
+- `POST /api/users/login` - Login user
+- `GET /api/users/profile` - Get user profile
+- `PUT /api/users/profile` - Update user profile
+- `GET /api/users` - Get all users (admin only)
 
-## How can I deploy this project?
+### Orders
+- `POST /api/orders` - Create a new order
+- `GET /api/orders/myorders` - Get user's orders
+- `GET /api/orders` - Get all orders (admin only)
+- `GET /api/orders/:id` - Get order by ID
+- `PUT /api/orders/:id/status` - Update order status (admin only)
 
-Simply open [Lovable](https://lovable.dev/projects/f0018e0e-f07f-4e0e-8cd4-513691e077d0) and click on Share -> Publish.
+## Admin Access
 
-## Can I connect a custom domain to my Lovable project?
+- Email: admin@gmail.com
+- Password: admin@123
 
-Yes, you can!
+## Database Schema
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+### Users Collection
+- username
+- email
+- password (hashed)
+- address
+- phone
+- isAdmin
+- profilePicture
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+### Products Collection
+- name
+- price
+- description
+- image
+- images (array)
+- category
+- colors (array)
+- specifications (array)
+- stock
+- rating
+
+### Orders Collection
+- user (reference to User)
+- products (array of product references with quantity and color)
+- shippingAddress
+- paymentMethod
+- totalAmount
+- status
+- orderId
+
+## License
+All Rights Reserved
