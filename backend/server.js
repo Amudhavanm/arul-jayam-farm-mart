@@ -20,37 +20,43 @@ app.use(express.json());
 
 // Connect to MongoDB
 const MONGO_URI = 'mongodb://localhost:27017/agri_shop_db';
-console.log(`⏳ Attempting to connect to MongoDB at: ${MONGO_URI}`);
+console.log(`\n==================================================`);
+console.log(`🔌 Connecting to MongoDB: ${MONGO_URI}`);
 
 mongoose.connect(MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 })
 .then(() => {
-  console.log('✅ Successfully connected to MongoDB');
+  console.log(`✅ MongoDB Connection Successful!`);
   console.log(`📊 Database: ${mongoose.connection.name}`);
-  console.log(`🔌 MongoDB connection state: ${mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected'}`);
+  console.log(`==================================================\n`);
 })
 .catch(err => {
-  console.error('❌ MongoDB connection error:', err);
+  console.error(`❌ MongoDB Connection Error:`);
+  console.error(err);
+  console.log(`==================================================\n`);
 });
 
 // MongoDB connection events
 mongoose.connection.on('error', (err) => {
-  console.error(`❌ MongoDB connection error: ${err.message}`);
+  console.error(`\n❌ MongoDB Connection Error: ${err.message}`);
 });
 
 mongoose.connection.on('disconnected', () => {
-  console.warn('⚠️ MongoDB disconnected');
+  console.warn(`\n⚠️ MongoDB Disconnected`);
 });
 
 mongoose.connection.on('reconnected', () => {
-  console.log('✅ MongoDB reconnected');
+  console.log(`\n✅ MongoDB Reconnected`);
 });
 
-// Log all API requests
+// Filter out asset requests from logging
 app.use((req, res, next) => {
-  console.log(`🔄 ${req.method} request to ${req.originalUrl}`);
+  // Skip logging for asset files
+  if (!req.path.includes('/assets/') && !req.path.includes('/favicon.ico')) {
+    console.log(`🔄 ${req.method} request to ${req.originalUrl}`);
+  }
   next();
 });
 
@@ -115,7 +121,7 @@ if (distExists) {
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-  console.error(`❌ Server error: ${err.stack}`);
+  console.error(`\n❌ Server error: ${err.stack}`);
   res.status(500).json({ message: 'Something went wrong!' });
 });
 

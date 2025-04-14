@@ -1,4 +1,3 @@
-
 const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
@@ -9,12 +8,13 @@ const jwt = require('jsonwebtoken');
 router.post('/register', async (req, res) => {
   try {
     const { email, username } = req.body;
-    console.log(`🔵 REGISTER: Attempting to register new user: ${username} (${email})`);
+    console.log(`\n=============== NEW USER REGISTRATION ===============`);
+    console.log(`Attempting to register user: ${username} (${email})`);
     
     // Check if user already exists
     const userExists = await User.findOne({ email });
     if (userExists) {
-      console.log(`❌ REGISTER FAILED: User with email ${email} already exists`);
+      console.log(`✖️ REGISTRATION FAILED: User with email ${email} already exists`);
       return res.status(400).json({ message: 'User already exists' });
     }
     
@@ -22,9 +22,11 @@ router.post('/register', async (req, res) => {
     const user = new User(req.body);
     const savedUser = await user.save();
     
-    console.log(`✅ REGISTER SUCCESS: User registered with ID: ${savedUser._id}`);
-    console.log(`   Username: ${savedUser.username}`);
-    console.log(`   Email: ${savedUser.email}`);
+    console.log(`✅ USER SUCCESSFULLY ADDED TO MONGODB`);
+    console.log(`User ID: ${savedUser._id}`);
+    console.log(`Username: ${savedUser.username}`);
+    console.log(`Email: ${savedUser.email}`);
+    console.log(`========================================================\n`);
     
     // Generate JWT token
     const token = jwt.sign(
@@ -44,7 +46,7 @@ router.post('/register', async (req, res) => {
       token
     });
   } catch (error) {
-    console.error(`❌ REGISTER ERROR: ${error.message}`);
+    console.error(`✖️ REGISTRATION ERROR: ${error.message}`);
     console.error(error.stack);
     res.status(400).json({ message: error.message });
   }
