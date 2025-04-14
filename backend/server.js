@@ -31,8 +31,12 @@ app.use('/api/products', productRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/orders', orderRoutes);
 
-// Root route - API health check
-app.get('/', (req, res) => {
+// Serve static files from the React app build directory
+// The React build folder will be at '../dist' relative to server.js
+app.use(express.static(path.join(__dirname, '../dist')));
+
+// API health check
+app.get('/api', (req, res) => {
   res.json({ 
     message: 'Arul Jayam Machinery API is running',
     status: 'OK',
@@ -47,6 +51,11 @@ app.get('/', (req, res) => {
 // Catch-all route for API 404s
 app.use('/api/*', (req, res) => {
   res.status(404).json({ message: 'API endpoint not found' });
+});
+
+// For any other request, send the React app's index.html file
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../dist/index.html'));
 });
 
 // Error handling middleware
