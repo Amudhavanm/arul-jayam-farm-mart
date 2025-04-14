@@ -1,4 +1,3 @@
-
 const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
@@ -8,17 +7,21 @@ const jwt = require('jsonwebtoken');
 // Register a new user
 router.post('/register', async (req, res) => {
   try {
-    const { email } = req.body;
+    const { email, username } = req.body;
+    console.log(`⏳ Attempting to register new user: ${username} (${email})`);
     
     // Check if user already exists
     const userExists = await User.findOne({ email });
     if (userExists) {
+      console.log(`❌ Registration failed: User with email ${email} already exists`);
       return res.status(400).json({ message: 'User already exists' });
     }
     
     // Create new user
     const user = new User(req.body);
     const savedUser = await user.save();
+    
+    console.log(`✅ User registered successfully: ${savedUser.username} (${savedUser.email}) with ID: ${savedUser._id}`);
     
     // Generate JWT token
     const token = jwt.sign(
@@ -38,6 +41,7 @@ router.post('/register', async (req, res) => {
       token
     });
   } catch (error) {
+    console.error(`❌ Registration error: ${error.message}`);
     res.status(400).json({ message: error.message });
   }
 });
@@ -46,9 +50,11 @@ router.post('/register', async (req, res) => {
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
+    console.log(`⏳ Login attempt for: ${email}`);
     
     // Special case for admin login
     if (email === 'admin@gmail.com' && password === 'admin@123') {
+      console.log(`✅ Admin login successful`);
       const token = jwt.sign(
         { id: 'admin123', isAdmin: true },
         process.env.JWT_SECRET || 'mysecretkey',
@@ -67,14 +73,18 @@ router.post('/login', async (req, res) => {
     // Find user by email
     const user = await User.findOne({ email });
     if (!user) {
+      console.log(`❌ Login failed: User with email ${email} not found`);
       return res.status(401).json({ message: 'Invalid email or password' });
     }
     
     // Check password
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
+      console.log(`❌ Login failed: Invalid password for ${email}`);
       return res.status(401).json({ message: 'Invalid email or password' });
     }
+    
+    console.log(`✅ Login successful for: ${user.username} (${user.email})`);
     
     // Generate JWT token
     const token = jwt.sign(
@@ -94,6 +104,7 @@ router.post('/login', async (req, res) => {
       token
     });
   } catch (error) {
+    console.error(`❌ Login error: ${error.message}`);
     res.status(500).json({ message: error.message });
   }
 });

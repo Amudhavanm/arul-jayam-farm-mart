@@ -20,17 +20,44 @@ app.use(express.json());
 
 // Connect to MongoDB
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/agri_shop_db';
+console.log(`⏳ Attempting to connect to MongoDB at: ${MONGO_URI}`);
+
 mongoose.connect(MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 })
-.then(() => console.log('Connected to MongoDB'))
-.catch(err => console.error('Could not connect to MongoDB', err));
+.then(() => {
+  console.log('✅ Successfully connected to MongoDB');
+  console.log(`📊 Database: ${mongoose.connection.name}`);
+  console.log(`🔌 MongoDB connection state: ${mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected'}`);
+})
+.catch(err => {
+  console.error('❌ MongoDB connection error:', err);
+});
+
+// MongoDB connection events
+mongoose.connection.on('error', (err) => {
+  console.error(`❌ MongoDB connection error: ${err.message}`);
+});
+
+mongoose.connection.on('disconnected', () => {
+  console.warn('⚠️ MongoDB disconnected');
+});
+
+mongoose.connection.on('reconnected', () => {
+  console.log('✅ MongoDB reconnected');
+});
 
 // API Routes
 app.use('/api/products', productRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/orders', orderRoutes);
+
+// Log all API requests
+app.use('/api', (req, res, next) => {
+  console.log(`🔄 ${req.method} request to ${req.originalUrl}`);
+  next();
+});
 
 // API health check
 app.get('/api', (req, res) => {
@@ -47,6 +74,7 @@ app.get('/api', (req, res) => {
 
 // Catch-all route for API 404s
 app.use('/api/*', (req, res) => {
+  console.log(`❌ 404: API endpoint not found - ${req.originalUrl}`);
   res.status(404).json({ message: 'API endpoint not found' });
 });
 
@@ -91,12 +119,16 @@ if (distExists) {
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-  console.error(err.stack);
+  console.error(`❌ Server error: ${err.stack}`);
   res.status(500).json({ message: 'Something went wrong!' });
 });
 
 // Start server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`
+🚀 Server running on port ${PORT}
+📡 API available at http://localhost:${PORT}/api
+🌐 Frontend available at http://localhost:${PORT}
+  `);
 });
