@@ -1,3 +1,4 @@
+
 const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
@@ -8,12 +9,12 @@ const jwt = require('jsonwebtoken');
 router.post('/register', async (req, res) => {
   try {
     const { email, username } = req.body;
-    console.log(`⏳ Attempting to register new user: ${username} (${email})`);
+    console.log(`🔵 REGISTER: Attempting to register new user: ${username} (${email})`);
     
     // Check if user already exists
     const userExists = await User.findOne({ email });
     if (userExists) {
-      console.log(`❌ Registration failed: User with email ${email} already exists`);
+      console.log(`❌ REGISTER FAILED: User with email ${email} already exists`);
       return res.status(400).json({ message: 'User already exists' });
     }
     
@@ -21,7 +22,9 @@ router.post('/register', async (req, res) => {
     const user = new User(req.body);
     const savedUser = await user.save();
     
-    console.log(`✅ User registered successfully: ${savedUser.username} (${savedUser.email}) with ID: ${savedUser._id}`);
+    console.log(`✅ REGISTER SUCCESS: User registered with ID: ${savedUser._id}`);
+    console.log(`   Username: ${savedUser.username}`);
+    console.log(`   Email: ${savedUser.email}`);
     
     // Generate JWT token
     const token = jwt.sign(
@@ -41,7 +44,8 @@ router.post('/register', async (req, res) => {
       token
     });
   } catch (error) {
-    console.error(`❌ Registration error: ${error.message}`);
+    console.error(`❌ REGISTER ERROR: ${error.message}`);
+    console.error(error.stack);
     res.status(400).json({ message: error.message });
   }
 });
@@ -50,11 +54,11 @@ router.post('/register', async (req, res) => {
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
-    console.log(`⏳ Login attempt for: ${email}`);
+    console.log(`🔵 LOGIN: Attempt for email: ${email}`);
     
     // Special case for admin login
     if (email === 'admin@gmail.com' && password === 'admin@123') {
-      console.log(`✅ Admin login successful`);
+      console.log(`✅ LOGIN SUCCESS: Admin login successful`);
       const token = jwt.sign(
         { id: 'admin123', isAdmin: true },
         process.env.JWT_SECRET || 'mysecretkey',
@@ -73,18 +77,18 @@ router.post('/login', async (req, res) => {
     // Find user by email
     const user = await User.findOne({ email });
     if (!user) {
-      console.log(`❌ Login failed: User with email ${email} not found`);
+      console.log(`❌ LOGIN FAILED: User with email ${email} not found`);
       return res.status(401).json({ message: 'Invalid email or password' });
     }
     
     // Check password
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
-      console.log(`❌ Login failed: Invalid password for ${email}`);
+      console.log(`❌ LOGIN FAILED: Invalid password for ${email}`);
       return res.status(401).json({ message: 'Invalid email or password' });
     }
     
-    console.log(`✅ Login successful for: ${user.username} (${user.email})`);
+    console.log(`✅ LOGIN SUCCESS: User ${user.username} (${user.email}) logged in`);
     
     // Generate JWT token
     const token = jwt.sign(
@@ -104,7 +108,8 @@ router.post('/login', async (req, res) => {
       token
     });
   } catch (error) {
-    console.error(`❌ Login error: ${error.message}`);
+    console.error(`❌ LOGIN ERROR: ${error.message}`);
+    console.error(error.stack);
     res.status(500).json({ message: error.message });
   }
 });
@@ -112,12 +117,17 @@ router.post('/login', async (req, res) => {
 // Get user profile
 router.get('/profile', protect, async (req, res) => {
   try {
+    console.log(`🔵 PROFILE: Getting profile for user ID: ${req.user.id}`);
     const user = await User.findById(req.user.id).select('-password');
     if (!user) {
+      console.log(`❌ PROFILE FAILED: User not found for ID: ${req.user.id}`);
       return res.status(404).json({ message: 'User not found' });
     }
+    console.log(`✅ PROFILE SUCCESS: Retrieved profile for user: ${user.username}`);
     res.json(user);
   } catch (error) {
+    console.error(`❌ PROFILE ERROR: ${error.message}`);
+    console.error(error.stack);
     res.status(500).json({ message: error.message });
   }
 });
@@ -125,8 +135,10 @@ router.get('/profile', protect, async (req, res) => {
 // Update user profile
 router.put('/profile', protect, async (req, res) => {
   try {
+    console.log(`🔵 UPDATE PROFILE: Updating profile for user ID: ${req.user.id}`);
     const user = await User.findById(req.user.id);
     if (!user) {
+      console.log(`❌ UPDATE PROFILE FAILED: User not found for ID: ${req.user.id}`);
       return res.status(404).json({ message: 'User not found' });
     }
     
@@ -143,6 +155,7 @@ router.put('/profile', protect, async (req, res) => {
     }
     
     const updatedUser = await user.save();
+    console.log(`✅ UPDATE PROFILE SUCCESS: Profile updated for user: ${updatedUser.username}`);
     
     res.json({
       _id: updatedUser._id,
@@ -154,6 +167,8 @@ router.put('/profile', protect, async (req, res) => {
       profilePicture: updatedUser.profilePicture
     });
   } catch (error) {
+    console.error(`❌ UPDATE PROFILE ERROR: ${error.message}`);
+    console.error(error.stack);
     res.status(400).json({ message: error.message });
   }
 });
@@ -161,9 +176,13 @@ router.put('/profile', protect, async (req, res) => {
 // Get all users (admin only)
 router.get('/', protect, isAdmin, async (req, res) => {
   try {
+    console.log(`🔵 ADMIN: Getting all users`);
     const users = await User.find({}).select('-password');
+    console.log(`✅ ADMIN SUCCESS: Retrieved ${users.length} users`);
     res.json(users);
   } catch (error) {
+    console.error(`❌ ADMIN ERROR: ${error.message}`);
+    console.error(error.stack);
     res.status(500).json({ message: error.message });
   }
 });

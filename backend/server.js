@@ -19,7 +19,7 @@ app.use(cors());
 app.use(express.json());
 
 // Connect to MongoDB
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/agri_shop_db';
+const MONGO_URI = 'mongodb://localhost:27017/agri_shop_db';
 console.log(`⏳ Attempting to connect to MongoDB at: ${MONGO_URI}`);
 
 mongoose.connect(MONGO_URI, {
@@ -48,16 +48,16 @@ mongoose.connection.on('reconnected', () => {
   console.log('✅ MongoDB reconnected');
 });
 
+// Log all API requests
+app.use((req, res, next) => {
+  console.log(`🔄 ${req.method} request to ${req.originalUrl}`);
+  next();
+});
+
 // API Routes
 app.use('/api/products', productRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/orders', orderRoutes);
-
-// Log all API requests
-app.use('/api', (req, res, next) => {
-  console.log(`🔄 ${req.method} request to ${req.originalUrl}`);
-  next();
-});
 
 // API health check
 app.get('/api', (req, res) => {
@@ -79,11 +79,7 @@ app.use('/api/*', (req, res) => {
 });
 
 // Serve static files and handle frontend routing
-
-// Path to the dist directory
 const distPath = path.join(__dirname, '../dist');
-
-// Check if dist directory exists
 const distExists = fs.existsSync(distPath);
 
 if (distExists) {
