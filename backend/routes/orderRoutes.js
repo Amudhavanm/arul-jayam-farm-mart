@@ -14,7 +14,8 @@ router.post('/', protect, async (req, res) => {
       totalAmount
     } = req.body;
     
-    console.log(`🛒 NEW ORDER: User ${req.user.id} is placing an order`);
+    console.log(`\n=============== NEW ORDER PLACEMENT ===============`);
+    console.log(`🛒 User ${req.user.id} is placing an order`);
     console.log(`   Products: ${products.length} items`);
     console.log(`   Total: ${totalAmount}`);
     console.log(`   Payment: ${paymentMethod}`);
@@ -46,8 +47,11 @@ router.post('/', protect, async (req, res) => {
     });
     
     const createdOrder = await order.save();
-    console.log(`✅ ORDER SUCCESS: Order placed! ID: ${orderId}, DB ID: ${createdOrder._id}`);
-    console.log(`   Order status: ${createdOrder.status}`);
+    console.log(`✅ ORDER SUCCESSFULLY ADDED TO MONGODB`);
+    console.log(`   Order DB ID: ${createdOrder._id}`);
+    console.log(`   Order ID: ${orderId}`);
+    console.log(`   Status: ${createdOrder.status}`);
+    console.log(`=================================================\n`);
     
     res.status(201).json(createdOrder);
   } catch (error) {
@@ -60,12 +64,16 @@ router.post('/', protect, async (req, res) => {
 // Get user's orders
 router.get('/myorders', protect, async (req, res) => {
   try {
-    console.log(`🛒 MY ORDERS: Fetching orders for user: ${req.user.id}`);
+    console.log(`\n=============== FETCHING USER ORDERS ===============`);
+    console.log(`🛒 Fetching orders for user: ${req.user.id}`);
+    
     const orders = await Order.find({ user: req.user.id })
       .populate('products.product')
       .sort({ createdAt: -1 });
     
-    console.log(`✅ MY ORDERS SUCCESS: Found ${orders.length} orders for user: ${req.user.id}`);
+    console.log(`✅ Successfully retrieved ${orders.length} orders from MongoDB`);
+    console.log(`=================================================\n`);
+    
     res.json(orders);
   } catch (error) {
     console.error(`❌ MY ORDERS ERROR: ${error.message}`);
@@ -77,13 +85,17 @@ router.get('/myorders', protect, async (req, res) => {
 // Get all orders (admin only)
 router.get('/', protect, isAdmin, async (req, res) => {
   try {
-    console.log(`🛒 ADMIN ORDERS: Fetching all orders`);
+    console.log(`\n=============== ADMIN FETCHING ALL ORDERS ===============`);
+    console.log(`🛒 Admin is fetching all orders`);
+    
     const orders = await Order.find({})
       .populate('user', 'username email')
       .populate('products.product')
       .sort({ createdAt: -1 });
     
-    console.log(`✅ ADMIN ORDERS SUCCESS: Retrieved ${orders.length} orders`);
+    console.log(`✅ Successfully retrieved ${orders.length} orders from MongoDB`);
+    console.log(`=======================================================\n`);
+    
     res.json(orders);
   } catch (error) {
     console.error(`❌ ADMIN ORDERS ERROR: ${error.message}`);
@@ -95,25 +107,30 @@ router.get('/', protect, isAdmin, async (req, res) => {
 // Get order by ID
 router.get('/:id', protect, async (req, res) => {
   try {
-    console.log(`🛒 ORDER DETAILS: Fetching order ID: ${req.params.id}`);
+    console.log(`\n=============== FETCHING ORDER DETAILS ===============`);
+    console.log(`🛒 Fetching order ID: ${req.params.id}`);
+    
     const order = await Order.findById(req.params.id)
       .populate('user', 'username email')
       .populate('products.product');
     
     if (!order) {
-      console.log(`❌ ORDER DETAILS FAILED: Order not found: ${req.params.id}`);
+      console.log(`❌ Order not found with ID: ${req.params.id}`);
       return res.status(404).json({ message: 'Order not found' });
     }
     
     // Check if the user is authorized to view this order
     if (!req.user.isAdmin && order.user._id.toString() !== req.user.id) {
-      console.log(`❌ ORDER DETAILS UNAUTHORIZED: User ${req.user.id} tried to access order ${req.params.id}`);
+      console.log(`❌ User ${req.user.id} not authorized to access order ${req.params.id}`);
       return res.status(403).json({ message: 'Not authorized' });
     }
     
-    console.log(`✅ ORDER DETAILS SUCCESS: Retrieved order: ${req.params.id}`);
-    console.log(`   Order status: ${order.status}`);
-    console.log(`   Order total: ${order.totalAmount}`);
+    console.log(`✅ Successfully retrieved order details from MongoDB`);
+    console.log(`   Order ID: ${order.orderId}`);
+    console.log(`   Status: ${order.status}`);
+    console.log(`   Total: ${order.totalAmount}`);
+    console.log(`=================================================\n`);
+    
     res.json(order);
   } catch (error) {
     console.error(`❌ ORDER DETAILS ERROR: ${error.message}`);
@@ -126,11 +143,12 @@ router.get('/:id', protect, async (req, res) => {
 router.put('/:id/status', protect, isAdmin, async (req, res) => {
   try {
     const { status } = req.body;
-    console.log(`🛒 UPDATE ORDER STATUS: Changing order ${req.params.id} status to: ${status}`);
+    console.log(`\n=============== UPDATING ORDER STATUS ===============`);
+    console.log(`🛒 Admin is updating order ${req.params.id} status to: ${status}`);
     
     const order = await Order.findById(req.params.id);
     if (!order) {
-      console.log(`❌ UPDATE ORDER STATUS FAILED: Order not found: ${req.params.id}`);
+      console.log(`❌ Order not found with ID: ${req.params.id}`);
       return res.status(404).json({ message: 'Order not found' });
     }
     
@@ -138,7 +156,11 @@ router.put('/:id/status', protect, isAdmin, async (req, res) => {
     order.status = status;
     const updatedOrder = await order.save();
     
-    console.log(`✅ UPDATE ORDER STATUS SUCCESS: Order ${req.params.id} status changed from ${oldStatus} to ${status}`);
+    console.log(`✅ ORDER STATUS SUCCESSFULLY UPDATED IN MONGODB`);
+    console.log(`   Order ID: ${updatedOrder.orderId}`);
+    console.log(`   Status changed from ${oldStatus} to ${status}`);
+    console.log(`=================================================\n`);
+    
     res.json(updatedOrder);
   } catch (error) {
     console.error(`❌ UPDATE ORDER STATUS ERROR: ${error.message}`);
