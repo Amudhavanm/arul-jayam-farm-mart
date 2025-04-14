@@ -3,6 +3,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const dotenv = require('dotenv');
+const path = require('path');
 const productRoutes = require('./routes/productRoutes');
 const userRoutes = require('./routes/userRoutes');
 const orderRoutes = require('./routes/orderRoutes');
@@ -25,10 +26,28 @@ mongoose.connect(MONGO_URI, {
 .then(() => console.log('Connected to MongoDB'))
 .catch(err => console.error('Could not connect to MongoDB', err));
 
-// Routes
+// API Routes
 app.use('/api/products', productRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/orders', orderRoutes);
+
+// Root route - API health check
+app.get('/', (req, res) => {
+  res.json({ 
+    message: 'Arul Jayam Machinery API is running',
+    status: 'OK',
+    endpoints: {
+      products: '/api/products',
+      users: '/api/users',
+      orders: '/api/orders'
+    }
+  });
+});
+
+// Catch-all route for API 404s
+app.use('/api/*', (req, res) => {
+  res.status(404).json({ message: 'API endpoint not found' });
+});
 
 // Error handling middleware
 app.use((err, req, res, next) => {
